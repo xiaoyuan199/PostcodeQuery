@@ -6,6 +6,7 @@ package com.example.postcodequery.model;
 
 public class AreaName {
     public String areaName;
+
     public AreaName(String areaName1){
         this.areaName=areaName1;
     }

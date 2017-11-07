@@ -1,5 +1,6 @@
 package com.example.postcodequery;
 
+import android.app.ProgressDialog;
 import android.os.Build;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -34,13 +35,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     RequestQueue mqueue;
-    final String url="http://apicloud.mob.com/v1/postcode/pcd?key=1da379ab2eb90";
+    private static final String TAG="MainActivity";
+    private static  final String url="http://apicloud.mob.com/v1/postcode/pcd?key=1da379ab2eb90";
      String post="http://apicloud.mob.com/v1/postcode/search?key=1da379ab2eb90";
      String posturl;
 
     Value value=new Value();
     ValuePost valuePost=new ValuePost();;
-
+     private ProgressDialog progressDialog;
 
     private AreaNameAdapter adapter;
     private List<AreaName> areaList=new ArrayList<>();
@@ -127,13 +129,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         netRequest();
 
-
-
     }
 
     private void netRequest() {
 
-
+        showProgressDialog();//显示加载对话框
         backButton.setVisibility(View.GONE);
 
         StringRequest reuest=new StringRequest(Request.Method.GET, url,
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     try{
                         Gson gson=new Gson();
                         value=gson.fromJson(s,Value.class);
-                        Log.d("linguiyuan",value.msg+value.retCode);
+                        Log.d("TAG",value.msg+value.retCode);
 
                         if(value.getProvinces()!=null&&value.getProvinces().size()>0){
 
@@ -200,15 +200,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
 
-
-
     }
 
     private void queryPostNum() {
-
+        showProgressDialog();
          posturl=post+"&pid="+selectProvinceid+"&cid="+selectedCityid+"&did="+selectDisid;
-
-        StringRequest postrequest=new StringRequest(Request.Method.GET, posturl,
+        StringRequest postrequest= new StringRequest(Request.Method.GET, posturl,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
@@ -218,14 +215,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                           valuePost=gson.fromJson(s,ValuePost.class);
                          // Log.d("我想要的：",""+selectProvinceid+selectedCityid+selectDisid);
-                          Log.d("我想要的：",""+s);
+                          Log.d("TAG：",""+s);
                           if(valuePost!=null){
 
-
-
-                                  postList=valuePost.getPostNumList();
-
-
+                              postList=valuePost.getPostNumList();
 
                               if(postList!=null){
 
@@ -259,17 +252,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                               }
                           }
-
+                        closeProcessDialog();
 
                       }catch (JsonSyntaxException e){
-                          Log.d("邮编：", ""+e);
+                          Log.d("JsonSyntaxException：", ""+e);
+                          closeProcessDialog();
                       }
 
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-
+                closeProcessDialog();
             }
         });
         mqueue.add(postrequest);
@@ -294,8 +288,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 currentLevel = LEVEL_PROVINCE;
                 titleText.setText("中国");
 
-    }
-}
+            }
+        }
+        closeProcessDialog();
 
     }
 
@@ -307,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         districtList=selectedCity.getDistricts();
 
         selectedCityid=selectedCity.getCityId();
-        Log.d("111111", "queryCity: "+selectedCityid);
+        Log.d("queryDistrict", "queryCity: "+selectedCityid);
 
         if(areaList!=null){
             areaList.clear();
@@ -332,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         cityList = selectProvince.getCitys();
 
         selectProvinceid=selectProvince.getProvinceId();
-        Log.d("888888", "queryProvince: "+selectProvinceid);
+        Log.d("queryCity", "queryProvince: "+selectProvinceid);
 
             if (areaList != null) {
                 areaList.clear();
@@ -350,6 +345,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     }
+     private void showProgressDialog(){
+        if(progressDialog==null){
+            progressDialog=new ProgressDialog(MainActivity.this);
+            progressDialog.setMessage("正在加载中...");
+            progressDialog.setCancelable(false);
+        }
+        progressDialog.show();
+    }
+    private  void closeProcessDialog(){
+        if(progressDialog!=null){
+            progressDialog.dismiss();
+        }
+    }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        closeProcessDialog();
+    }
 }

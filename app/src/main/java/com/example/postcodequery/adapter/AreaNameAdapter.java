@@ -23,26 +23,28 @@ public class AreaNameAdapter extends ArrayAdapter<AreaName> {
     @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
+        ViewHolder holder;
         AreaName areaName=getItem(position);
-        //提高了运行效率
-        View view;
+     //优化了Listview
         if(convertView==null) {
-             view = LayoutInflater.from(getContext()).inflate(resourceid, parent, false);
+            holder=new ViewHolder();
+            convertView = LayoutInflater.from(getContext()).inflate(resourceid, parent, false);
+            holder.textView=(TextView)convertView.findViewById(R.id.text_item);
+            convertView.setTag(holder);
         }else{
-            view=convertView;
+            holder= (ViewHolder) convertView.getTag();
         }
-        TextView textView= (TextView) view.findViewById(R.id.text_item);
-        textView.setText(areaName.getAreaName());
 
-        return view;
+        holder.textView.setText(areaName.getAreaName());
+
+        return convertView;
     }
 
     public AreaNameAdapter(Context context, int resource, List<AreaName> objects) {
         super(context, resource, objects);
         resourceid=resource;
-
-
-
+    }
+    static class ViewHolder{
+        TextView textView;
     }
 }
